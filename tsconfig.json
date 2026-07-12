@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "@fixtures/*": ["./fixtures/*"],
+      "@pages/*": ["./pages/*"],
+      "@config": ["./api-test.config"]
+    },
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "types": ["node"]
+  },
+  "include": ["**/*.ts"]
+}

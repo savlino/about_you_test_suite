@@ -1,0 +1,45 @@
+{
+  "cookies": [
+    {
+      "name": "__cf_bm",
+      "value": "<VALUE>",
+      "domain": ".aboutyou.com",
+      "path": "/",
+      "expires": 1983607645,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "tadarida-session-v1",
+      "value": "<VALUE>",
+      "domain": ".aboutyou.de",
+      "path": "/",
+      "expires": 1983607245,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "tadarida-user-v1",
+      "value": "<VALUE>",
+      "domain": ".aboutyou.de",
+      "path": "/",
+      "expires": 1915147245,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "https://en.aboutyou.de",
+      "localStorage": [
+        {
+          "name": "<XXXXXXX:session-data>",
+          "value": "<VALUE>"
+        }
+      ]
+    }
+  ]
+}
