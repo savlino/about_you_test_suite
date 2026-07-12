@@ -10,16 +10,17 @@ setup('authenticate', async ({ page }) => {
         fs.mkdirSync('.auth');
     }
 
-    await page.goto('/login');
+    await page.goto('/?loginFlow=login');
 
-    const cookieBanner = page.getByRole('button', { name: /Alle akzeptieren/i });
+    const cookieBanner = page.getByRole('button', { name: /Ok/i });
     if (await cookieBanner.isVisible({ timeout: 5000 }).catch(() => false)) {
         await cookieBanner.click();
+        await cookieBanner.waitFor({ state: 'hidden' });
     }
 
-    await page.getByLabel('E-Mail-Adresse').fill(process.env.TEST_EMAIL!);
-    await page.getByLabel('Passwort').fill(process.env.TEST_PASSWORD!);
-    await page.getByRole('button', { name: /Anmelden/i }).click();
+    await page.getByTestId("textInputLabel").fill(process.env.TEST_EMAIL!);
+    await page.getByTestId("textInputLabel").fill(process.env.TEST_PASSWORD!);
+    await page.getByTestId("SubmitLogin").click();
 
     await expect(page).not.toHaveURL(/\/login/);
 

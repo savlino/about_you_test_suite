@@ -6,7 +6,7 @@ export class BasePage {
     /** closes Cookie-alert banner */
     async acceptCookies(): Promise<void> {
 
-        const banner = this.page.getByRole('button', { name: /Alle akzeptieren/i });
+        const banner = this.page.getByRole('button', { name: /Ok/i });
         if (await banner.isVisible({ timeout: 5000 }).catch(() => false)) {
             await banner.click();
             await banner.waitFor({ state: 'hidden' });
