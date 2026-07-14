@@ -61,23 +61,11 @@ export default defineConfig({
 
     {
       name: 'outlet-guest',
-      testMatch: ['**/outlet/auth-gate.spec.ts'],
+      testMatch: ['**/outlet/**.spec.ts'],
       use: {
         ...devices['Desktop Chrome'],
         baseURL: 'https://aboutyou-outlet.de',
         storageState: { cookies: [], origins: [] },
-      },
-    },
-
-    // Authenticated outlet-tests
-    {
-      name: 'outlet-authenticated',
-      testMatch: ['**/outlet/discount.spec.ts'],
-      dependencies: ['setup'],
-      use: {
-        ...devices['Desktop Chrome'],
-        baseURL: 'https://aboutyou-outlet.de',
-        storageState: '.auth/state.json',
       },
     },
 
