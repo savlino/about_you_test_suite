@@ -1,11 +1,17 @@
 # About You Test Suite
 
-Playwright E2E test suite covering [aboutyou.de](https://www.aboutyou.de/) and [aboutyou-outlet.de](https://aboutyou-outlet.de/), written in TypeScript.
+Playwright end-to-end test suite for [aboutyou.de](https://www.aboutyou.de/) and [aboutyou-outlet.de](https://aboutyou-outlet.de/), written in TypeScript and organized with Playwright projects plus a small Page Object Model.
+
+## Overview
+
+This repository covers two related storefronts with slightly different test goals. The main site suite focuses on customer-facing flows such as search, catalog interaction, cart behavior, and a few resilience checks, while the outlet suite focuses on auth-gate behavior, cross-site session isolation, and discount-data validation.
+
+The project uses a dedicated Playwright setup project to log in once and persist browser state into `.auth/state.json`, which is then reused by authenticated projects. Guest-only outlet checks intentionally run without that state so protected-route behavior can be validated from a clean session.
 
 ## Prerequisites
 
 - Node.js 18+
-- A registered account on [aboutyou.de](https://www.aboutyou.de/) — the same credentials work for both sites
+- A registered account on [aboutyou.de](https://www.aboutyou.de/); the same credentials are expected to work for both sites according to the current repo setup.
 
 ## Setup
 
@@ -45,24 +51,41 @@ This logs in once and saves the session to `.auth/state.json`. All authenticated
 
 ## Running Tests
 
-```bash
-# Run everything
-npx playwright test
+Run everything
 
-# Run a specific project
+```bash
+npx playwright test
+```
+
+Run a specific project
+
+```bash
 npx playwright test --project=authenticated       # aboutyou.de — auth-required tests
 npx playwright test --project=outlet-guest        # outlet auth gate (guest session)
 npx playwright test --project=outlet-authenticated # outlet discount display
 npx playwright test --project=cross-site          # session isolation between both sites
+```
 
-# Run with visible browser (useful for debugging)
+Run a single spec
+
+```bash
+npx playwright test tests/e2e/search.spec.ts
+npx playwright test tests/outlet/auth-gate.spec.ts
+```
+
+Run with visible browser (useful for debugging)
+
+```bash
 npx playwright test --headed
+```
 
-# Open interactive UI mode
+Open interactive UI mode
+
+```bash
 npx playwright test --ui
 ```
 
-## View the Report
+View the Report
 
 ```bash
 npx playwright show-report
@@ -93,21 +116,25 @@ npx playwright show-report
 │   ├── PageManager.ts         # Page Manager file, addressing existing pages
 │   ├── ProductPage.ts
 │   └── SearchPage.ts
-└── fixtures/
-    └── index.ts               # Custom test with injected page objects
+├── fixtures/   
+│   └── index.ts  
+└── helpers/
+    └── basic_helpers.ts       # Helper functions for simple operations
 ```
+
+The `pages/` directory contains the Page Object Model used by the main-site tests. `PageManager.ts` acts as a simple entry point for the page objects used across the suite.
 
 ## Test Projects
 
 The config defines five Playwright projects, each with its own `baseURL` and session state:
 
-| Project | Target | Session | Runs |
+| Project | Target | Session | Purpose |
 |---|---|---|---|
-| `setup` | aboutyou.de | — | `global.setup.ts` only |
-| `authenticated` | aboutyou.de | logged in | `tests/e2e/**` |
-| `outlet-guest` | outlet.de | no session | `outlet/auth-gate.spec.ts` |
-| `outlet-authenticated` | outlet.de | logged in | `outlet/discount.spec.ts` |
-| `cross-site` | both | logged in | `outlet/cross_site.spec.ts` |               # Currently not implemented
+| `setup` | aboutyou.de | fresh login | Generates `.auth/state.json` for authenticated runs. |
+| `authenticated` | aboutyou.de | logged in | Runs the main storefront suite under `tests/e2e/**`. |
+| `outlet-guest` | aboutyou-outlet.de | guest | Validates guest access restrictions in `tests/outlet/auth-gate.spec.ts`. |
+| `outlet-authenticated` | aboutyou-outlet.de | logged in | Runs `tests/outlet/discount.spec.ts` using the saved auth state. |
+| `cross-site` | both sites | logged in on main site | Checks that an authenticated main-site session does not automatically grant outlet access. |
 
 `outlet-guest` has no dependency on `setup` — the empty session is intentional, not a missing step.
 
@@ -115,16 +142,24 @@ The config defines five Playwright projects, each with its own `baseURL` and ses
 
 **aboutyou.de**
 
-- Search: known queries, no-results state, XSS and long-input resilience, result links
-- Cart: add with size selection, add without size (size dropdown opens), remove item, cart persists on reload
-- Catalog: color filter, sort by price, page load sanity
-- Edge cases: bad product/category URLs, XSS in search, unauthenticated checkout redirect
+- Search: known queries return results, unlikely queries show the no-results state, and oversized input does not break the page flow.
+- Cart: add-to-cart from product page, add-to-cart from gallery modal, validation when size is not selected, item removal, and basket persistence after reload.
+- Catalog: coverage for filter behavior and sorting interactions on a category page.
+- Edge cases: invalid product URL returns 404, suspicious search input does not crash the app, and direct navigation to checkout redirects unauthenticated users to login.
 
 **aboutyou-outlet.de**
 
 - Auth gate: guests are redirected to `/signin` across all routes including direct product URLs; signin page renders correctly; protected routes open without further redirect
 - Discount display: original and sale price both visible per card;
-- Cross-site SSO: login on main → outlet not accessible;
+- Cross-site isolation: an authenticated `aboutyou.de` session does not automatically authenticate outlet access.
+
+## Known limitations
+
+Some outlet tests use hardcoded product URLs and are therefore data-dependent and potentially unstable over time. This is especially relevant for `discount.spec.ts`, which currently demonstrates the approach against a fixed product page rather than dynamically discovering a current outlet item.
+
+The discount test currently validates API pricing consistency rather than asserting that the same values are rendered correctly in the visible UI. Likewise, the cross-site suite currently verifies one important isolation scenario, but it does not yet cover a broader matrix of login/logout combinations across both domains.
+
+The suite also stops before any real payment completion flow, and email-based flows such as password reset or order confirmation are intentionally out of scope in the current repository description.
 
 ## What's Not Covered — and Why
 
