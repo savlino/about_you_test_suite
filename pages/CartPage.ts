@@ -57,7 +57,7 @@ export class CartPage extends BasePage {
 
     }
 
-    async clearCart(page: Page): Promise<void> {
+    async clearCart(): Promise<void> {
         await expect(
             this.emptyCartMessage.or(this.removeButtons).first()
         ).toBeVisible();
@@ -70,7 +70,8 @@ export class CartPage extends BasePage {
 
             for (let i = numOfItems; i > 0; i--) {
                 await this.removeFirstItem();
-                await page.waitForTimeout(1500); // waiting for animation
+                // expecting to decreasing items number, due to animation
+                await expect(this.removeButtons).toHaveCount(i - 1);
             }
             await expect(this.emptyCartMessage).toBeVisible();
         }

@@ -1,8 +1,11 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * Proper discount Display for Outlet resource is essential
+ * Verifies outlet discount data through the product-details API response.
  *
+ * Opens a known outlet product page, captures the related JSON response, and
+ * checks that the returned product ID matches the URL and that discounted price
+ * values are internally consistent.
  */
 
 // UNSTABLE due to hardcoded link (exclusively demonstration purposes)
@@ -15,33 +18,29 @@ test.describe('Outlet - Discount Display', () => {
         if (productId == null) throw new Error('Incorrect URL or unexpected format');
 
         // catching API response with product details
-        const productResponse = page.waitForResponse(resp => {
+        const productResponsePromise = page.waitForResponse(resp => {
             const ct = resp.headers()['content-type'] || '';
-            return resp.url().includes(productId)
-                && resp.status() === 200
+            return resp.status() === 200
                 && ['fetch', 'xhr'].includes(resp.request().resourceType())
-                && ct.includes('application/json');
+                && ct.includes('application/json')
+                && resp.url().includes(`/api`)
+                && resp.url().includes(productId);
         });
 
         await page.goto(PRODUCT_PAGE);
-
-        const resp = await productResponse;
+        await expect(page.locator('body')).toBeVisible();
+        const resp = await productResponsePromise;
         const data = await resp.json();
 
         expect(data.id).toBe(Number(productId));
 
         // validating discount information
-        expect(
-            data.lowestPriceOfVariants.originalPrice
-        ).toBeGreaterThan(
-            data.lowestPriceOfVariants.currentPrice
-        );
+        const originalPrice = data.lowestPriceOfVariants.originalPrice;
+        const currentPrice = data.lowestPriceOfVariants.currentPrice;
+        const bestPrice = data.lowestBestPrice.price;
 
-        expect(
-            data.lowestPriceOfVariants.currentPrice
-        ).toBeGreaterThanOrEqual(
-            data.lowestBestPrice.price
-        );
+        expect(originalPrice).toBeGreaterThan(currentPrice);
+        expect(currentPrice).toBeGreaterThanOrEqual(bestPrice);
         
     });
 });

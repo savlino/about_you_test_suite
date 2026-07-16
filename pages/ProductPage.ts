@@ -20,7 +20,7 @@ export class ProductPage extends BasePage {
     async selectFirstAvailableSize(): Promise<string> {
 
         await this.sizeDropdown.click();
-        expect(this.sizeOptions.first()).toBeVisible();
+        await expect(this.sizeOptions.first()).toBeVisible();
 
         // filtering listed size options to keep only available
         const available = this.sizeOptions.locator('[data-testid$="_active"]');
@@ -58,7 +58,7 @@ export class ProductPage extends BasePage {
 
     async validateItemSentToBasket(): Promise<void> {
         
-        expect(this.page.getByTestId('basketFlyoutHeader')).toBeVisible();
+        await expect(this.page.getByTestId('basketFlyoutHeader')).toBeVisible();
         await this.page.getByTestId('basketFlyoutClose').click();
 
     }

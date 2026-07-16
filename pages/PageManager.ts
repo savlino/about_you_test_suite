@@ -7,7 +7,7 @@ import { ItemModal } from "./ItemModal";
 
 export class PageManager {
 
-    private readonly page: Page;
+    readonly page: Page;
 
     private readonly cartPage: CartPage;
     private readonly searchPage: SearchPage;

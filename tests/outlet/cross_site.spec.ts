@@ -8,6 +8,7 @@ import { test, expect } from '@playwright/test';
  * does not affect the session on another
  */
 
+// current implementation only covers .de domain
 const MAIN = 'https://www.aboutyou.de';
 const OUTLET = 'https://aboutyou-outlet.de';
 

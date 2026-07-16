@@ -13,6 +13,7 @@ const PROTECTED_ROUTES = [
     { path: '/deals/k',      label: 'kids category' },
 ];
 
+// UNSTABLE due to hardcoded link (exclusively demonstration purposes)
 const EXISTING_URL = '/deals/k/278?category=138114';
 
 test.describe('Outlet - Auth Gate (guest)', () => {
@@ -22,11 +23,9 @@ test.describe('Outlet - Auth Gate (guest)', () => {
     });
 
     // redirects to Sign-in
-
     for (const route of PROTECTED_ROUTES) {
         test(`guest visiting ${route.label} is redirected to /signin`, async ({ page }) => {
             await page.goto(route.path);
-            await page.waitForURL(/\/signin|\/login/i, { timeout: 10000 });
             await expect(page).toHaveURL(/\/signin|\/login/i);
         });
     }
@@ -35,14 +34,13 @@ test.describe('Outlet - Auth Gate (guest)', () => {
 
         // UNSTABLE due to hardcoded link (exclusively demonstration purposes)
         await page.goto(EXISTING_URL);
-        await page.waitForURL(EXISTING_URL, { timeout: 10000 });
         await expect(page).toHaveURL(EXISTING_URL);
 
     });
 
     // Double-checking that content is protected in API as well
 
-    test('product API endpoint returns 401 without auth', async ({ request }) => {
+    test('product API endpoint returns 403 without auth', async ({ request }) => {
 
         // requesting content unauthorised
         const res = await request.get('https://aboutyou-outlet.de/api/v1/products', {

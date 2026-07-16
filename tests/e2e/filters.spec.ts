@@ -1,32 +1,35 @@
-import { PageManager } from '@pages/PageManager';
 import { test, expect } from '@fixtures/index';
 
-test.describe('Catalog Filters', () => {
-    test.beforeEach(async ({ page }) => {
-        
-        const aboutYou = new PageManager(page);
+/**
+ * Catalog filtering and sorting tests for product listing pages.
+ *
+ * Verifies that applying a filter updates the visible result set and counter,
+ * and that sorting changes product ordering according to the selected rule.
+ * These checks help catch regressions in listing controls and catalog refresh behavior.
+ */
 
-        // using static URL to skip unnecessary flows
-        await page.goto('/c/frauen/bekleidung/jeans-20258');
+test.describe('Catalog Filters', () => {
+    test.beforeEach(async ({ aboutYou }) => {
+
+        // open a stable category page directly to avoid unrelated homepage/search setup
+        await aboutYou.page.goto('/c/frauen/bekleidung/jeans-20258');
 
         await aboutYou.onSearchPage().acceptCookies();
         await aboutYou.onSearchPage().closeSwitchCountryBanner();
         
-        await page.waitForLoadState('domcontentloaded');
+        await aboutYou.page.waitForLoadState('domcontentloaded');
 
     });
 
-    test('applying a "Color" filter reduces results', async ({ page }) => {
-        
-        const aboutYou = new PageManager(page);
+    test('applying a "Color" filter reduces results', async ({ aboutYou }) => {
 
-        // scrapes item count before filtering
+        // capture listing state before applying filters
         const beforeCount = await aboutYou.onSearchPage().getResultCount();
-        // applying filter by 'Color', first color in list
-        const expectedAfterFilterValue = await aboutYou.onSearchPage().applyFirstColorFilterAndGetCount();
+        // apply the first available color option
+        const expectedAfterFilterValue = await aboutYou.onSearchPage().applyFirstColorFilterAndGetExpectedCount();
 
-        // expecting count to update
-        expect(aboutYou.onSearchPage().itemCounterOnPage).not.toBe(beforeCount);
+        // wait until the visible counter changes after the filter is applied
+        expect(aboutYou.onSearchPage().getResultCount()).not.toBe(beforeCount);
         const afterCount = await aboutYou.onSearchPage().getResultCount();
 
         expect(afterCount).toBe(expectedAfterFilterValue);
@@ -34,18 +37,15 @@ test.describe('Catalog Filters', () => {
 
     });
 
-    // test UNSTABLE, default order not guaranteed
-    test('sort by price ascending shows cheapest item first', async ({ page }) => {
-        
-        const aboutYou = new PageManager(page);
+    // test UNSTABLE, default order not guaranteed, first-card comparison may not be deterministic
+    test('sort by price ascending shows cheapest item first', async ({ aboutYou }) => {
 
-        // storing first element in default order
-        const firstResultBeforeSorting = aboutYou.onSearchPage().productCards.first();
-        aboutYou.onSearchPage().sortByLowestPrice();
+        // capture the first visible card under default sort order
+        const firstResultBeforeSorting = await aboutYou.onSearchPage().productCards.first().textContent();
+        await aboutYou.onSearchPage().sortByLowestPrice();
 
-        expect(
-            aboutYou.onSearchPage().productCards.first()
-        ).not.toBe(firstResultBeforeSorting);
+        const firstResultAfterSorting = await aboutYou.onSearchPage().productCards.first().textContent();
+        expect(firstResultAfterSorting).not.toBe(firstResultBeforeSorting);
 
     });
 });

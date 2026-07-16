@@ -1,23 +1,24 @@
-import { PageManager } from '@pages/PageManager';
 import { test, expect } from '@fixtures/index';
 
 /**
- * Warenkorb tests
+ * Cart flow tests for the outlet site.
+ *
+ * Verifies that an item can be added to the basket, that its name and size are
+ * preserved correctly, and that the basket can be cleared back to an empty state.
+ * These tests cover the basic shopping-cart lifecycle and help catch regressions
+ * in product selection, basket transfer, and item removal.
  */
 test.describe('Cart', () => {
 
-    test.beforeEach(async ({ page }) => {
-
-        const aboutYou = new PageManager(page);
+    test.beforeEach(async ({ aboutYou }) => {
 
         await aboutYou.onCartPage().goto();
-        await aboutYou.onCartPage().clearCart(page);
+        // ensure basket starts empty for each test
+        await aboutYou.onCartPage().clearCart();
 
     });
 
-    test('adding an item updates cart', async ({ page }) => {
-
-        const aboutYou = new PageManager(page);
+    test('adding an item updates cart', async ({ aboutYou }) => {
 
         await aboutYou.onSearchPage().goto();
         await aboutYou.onSearchPage().search('T-Shirt');
@@ -32,12 +33,11 @@ test.describe('Cart', () => {
 
     });
 
-    test('adding an item from gallery', async ({ page }) => {
-
-        const aboutYou = new PageManager(page);
+    test('adding an item from gallery', async ({ aboutYou }) => {
 
         await aboutYou.onSearchPage().goto();
         await aboutYou.onSearchPage().search('Skirt');
+        // add to basket directly from listing, which opens the item modal
         await aboutYou.onSearchPage().clickAddToBasketFromItemCard();
 
         const [itemName, itemSize] = await aboutYou.inItemModal().addToCartWithSize();
@@ -49,9 +49,7 @@ test.describe('Cart', () => {
 
     });
 
-    test('removing the last item shows empty cart', async ({ page }) => {
-
-        const aboutYou = new PageManager(page);
+    test('removing the last item shows empty cart', async ({ aboutYou }) => {
 
         await aboutYou.onSearchPage().goto();
         await aboutYou.onSearchPage().search('Jeans');
@@ -68,23 +66,19 @@ test.describe('Cart', () => {
 
     });
 
-    test('adding product without selecting size shows validation error', async ({ page }) => {
-
-        const aboutYou = new PageManager(page);
+    test('adding product without selecting size shows validation error', async ({ aboutYou }) => {
 
         await aboutYou.onSearchPage().goto();
         await aboutYou.onSearchPage().search('Sneaker');
         await aboutYou.onSearchPage().openFirstResult();
 
         await aboutYou.onProductPage().addToCart();
-
-        expect(aboutYou.onProductPage().sizeOptions).toBeVisible();
+        // size options droprown opens automatically
+        await expect(aboutYou.onProductPage().sizeOptions).toBeVisible();
 
     });
 
-    test('cart persists after page reload', async ({ page }) => {
-
-        const aboutYou = new PageManager(page);
+    test('cart persists after page reload', async ({ aboutYou }) => {
 
         await aboutYou.onSearchPage().goto();
         await aboutYou.onSearchPage().search('Hoodie');
@@ -92,7 +86,7 @@ test.describe('Cart', () => {
         const [itemName, itemSize] = await aboutYou.onProductPage().addToCartWithSize();
         await aboutYou.onProductPage().validateItemSentToBasket();
 
-        await page.reload();
+        await aboutYou.page.reload();
 
         await aboutYou.onCartPage().goto();
         await aboutYou.onCartPage().validateItemInBasket(itemName);

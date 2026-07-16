@@ -1,11 +1,7 @@
 import { Page, Locator, expect } from '@playwright/test';
 import { BasePage } from '@pages/BasePage';
+import { getElementTextAsNumber } from '@helpers/basic_helpers';
 
-
-async function getBadgeNumber(locator: Locator) {
-    const text = await locator.innerText();
-    return Number(text.replace(/\D/g, ''));
-}
 
 export class SearchPage extends BasePage {
     readonly searchInput: Locator;
@@ -33,18 +29,10 @@ export class SearchPage extends BasePage {
 
     }
 
-    // async goto(): Promise<void> {
-
-    //     await this.page.goto('/');
-    //     await this.acceptCookies();
-    //     await this.closeSwitchCountryBanner();
-        
-    // }
-
     async search(query: string): Promise<void> {
 
         await this.searchButton.click();
-        expect(this.searchInput).toBeVisible();
+        await expect(this.searchInput).toBeVisible();
         await this.searchInput.fill(query);
 
         await this.searchInput.press('Enter');
@@ -53,12 +41,12 @@ export class SearchPage extends BasePage {
 
     async getResultCount(): Promise<number> {
 
-        expect(this.productCards.first()).toBeVisible();
-        return await getBadgeNumber(this.itemCounterOnPage);
+        await expect(this.productCards.first()).toBeVisible();
+        return await getElementTextAsNumber(this.itemCounterOnPage);
 
     }
 
-    async applyFirstColorFilterAndGetCount(): Promise<number> {
+    async applyFirstColorFilterAndGetExpectedCount(): Promise<number> {
         
         await this.colorDropdown.click();
         const colorFilter = this.firstColorOption;
@@ -66,7 +54,7 @@ export class SearchPage extends BasePage {
         // scrapes item count value from filter checkbox
         const onFilterBadge = colorFilter.getByTestId('numberBadge');
         await colorFilter.click();
-        return await getBadgeNumber(onFilterBadge);
+        return await getElementTextAsNumber(onFilterBadge);
     }
 
     async openFirstResult(): Promise<void> {
@@ -95,6 +83,7 @@ export class SearchPage extends BasePage {
 
         await this.sortingDropdown.click();
         await this.sortingLowestPrice.click();
+        await expect(this.productCards.first()).toBeVisible();
 
     }
 }
