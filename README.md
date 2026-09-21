@@ -8,6 +8,10 @@ This repository covers two related storefronts with slightly different test goal
 
 The project uses a dedicated Playwright setup project to log in once and persist browser state into `.auth/state.json`, which is then reused by authenticated projects. Guest-only outlet checks intentionally run without that state so protected-route behavior can be validated from a clean session.
 
+## Assessment Context
+
+This test suite was built as a technical assessment for ABOUT YOU's QA hiring process and completed as part of the final-round technical assessment, followed by a further interview with the QA team about the suite. It exercises only publicly accessible pages and data — no authentication bypass, no private endpoints, no PII, no load/stress testing against production. Shared here with the understanding that assessment submissions are fair to showcase as portfolio work.
+
 ## Prerequisites
 
 - Node.js 18+
@@ -62,7 +66,6 @@ Run a specific project
 ```bash
 npx playwright test --project=authenticated       # aboutyou.de — auth-required tests
 npx playwright test --project=outlet-guest        # outlet auth gate (guest session)
-npx playwright test --project=outlet-authenticated # outlet discount display
 npx playwright test --project=cross-site          # session isolation between both sites
 ```
 

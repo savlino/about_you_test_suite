@@ -18,8 +18,8 @@ setup('authenticate', async ({ page }) => {
         await cookieBanner.waitFor({ state: 'hidden' });
     }
 
-    await page.getByTestId("textInputLabel").fill(process.env.TEST_EMAIL!);
-    await page.getByTestId("textInputLabel").fill(process.env.TEST_PASSWORD!);
+    await page.getByTestId("EmailField").fill(process.env.TEST_EMAIL!);
+    await page.getByTestId("PasswordField").fill(process.env.TEST_PASSWORD!);
     await page.getByTestId("SubmitLogin").click();
 
     await expect(page).not.toHaveURL(/\/login/);

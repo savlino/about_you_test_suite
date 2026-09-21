@@ -30,18 +30,14 @@ export default defineConfig({
   /* Configure projects for major browsers */
   projects: [
 
-    // ─── SETUP ──────────────────────────────────────────────────────────────
-    {
-      name: 'setup',
-      testMatch: '**/global.setup.ts',
-      use: { baseURL: 'https://www.aboutyou.de' },
-    },
-
     // ─── ABOUT YOU (aboutyou.de) ─────────────────────────────────────────
     {
       name: 'authenticated',
-      testMatch: ['**/e2e/**/*.spec.ts'],
-      dependencies: ['setup'],
+      testMatch: [
+        '**/e2e/**/*.spec.ts',
+        '**/outlet/cross_site.spec.ts'
+      ],
+      // dependencies: ['setup'],
       use: {
         ...devices['Desktop Chrome'],
         baseURL: 'https://www.aboutyou.de',
@@ -66,18 +62,6 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         baseURL: 'https://aboutyou-outlet.de',
         storageState: { cookies: [], origins: [] },
-      },
-    },
-
-    // Cross-site switch baseURL during test execution
-    {
-      name: 'cross-site',
-      testMatch: ['**/outlet/cross_site.spec.ts'],
-      dependencies: ['setup'],
-      use: {
-        ...devices['Desktop Chrome'],
-        baseURL: 'https://www.aboutyou.de',
-        storageState: '.auth/state.json',
       },
     }
   ],
